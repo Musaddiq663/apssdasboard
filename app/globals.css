@@ -1,26 +1,57 @@
 @import "tailwindcss";
 
+/* ===========================
+   GLOBAL THEME VARIABLES
+=========================== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #0f172a;
+  --primary: #4f46e5;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ===========================
+   THEMES (MANUAL CONTROL)
+=========================== */
+
+[data-theme='dark'] {
+  --bg: #020617;
+  --card: #020617;
+  --text: #e5e7eb;
+  --primary: #6366f1;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+[data-theme='ocean'] {
+  --bg: #021e2b;
+  --card: #022c3d;
+  --text: #e0f2fe;
+  --primary: #22d3ee;
 }
+
+[data-theme='purple'] {
+  --bg: #1e062f;
+  --card: #2a0845;
+  --text: #f3e8ff;
+  --primary: #a855f7;
+}
+
+/* ===========================
+   BASE STYLES
+=========================== */
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--bg);
+  color: var(--text);
   font-family: Arial, Helvetica, sans-serif;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+@keyframes pulse-slow {
+  0%, 100% { transform: scale(1) translate(0,0); opacity: 0.6; }
+  50% { transform: scale(1.5) translate(20px,-20px); opacity: 0.3; }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 10s ease-in-out infinite;
 }
