@@ -1,17 +1,34 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useRouter, usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 export default function Sidebar() {
-  const [open, setOpen] = useState<string | null>(null)
   const router = useRouter()
+  const pathname = usePathname()
+
+  const [assistantOpen, setAssistantOpen] = useState(false)
+  const [learningOpen, setLearningOpen] = useState(false)
+
+  // Exact match for route to auto-open relevant section
+  useEffect(() => {
+    if (pathname === '/dashboard/assistant') {
+      setAssistantOpen(true)
+      setLearningOpen(false)
+    } else if (pathname === '/dashboard/learning') {
+      setLearningOpen(true)
+      setAssistantOpen(false)
+    } else {
+      // Home or other pages
+      setAssistantOpen(false)
+      setLearningOpen(false)
+    }
+  }, [pathname])
 
   return (
     <aside
-      className="w-64 min-h-screen p-6 flex flex-col transition-all duration-500"
+      className="w-64 min-h-screen p-6 flex flex-col"
       style={{
         background: 'var(--card)',
         color: 'var(--text)',
@@ -19,70 +36,63 @@ export default function Sidebar() {
       }}
     >
       {/* Logo */}
-      <h1
-        className="text-2xl font-bold mb-10 tracking-wide"
-        style={{ color: 'var(--primary)' }}
-      >
+      <h1 className="text-2xl font-bold mb-8" style={{ color: 'var(--primary)' }}>
         Admin Panel
       </h1>
 
+      {/* Home */}
+      <Link
+        href="/dashboard"
+        className={`mb-6 px-3 py-3 rounded-xl block transition
+          ${pathname === '/dashboard' ? 'font-semibold' : 'opacity-80 hover:opacity-100'}`}
+        style={{ background: 'rgba(255,255,255,0.08)' }}
+      >
+        🏠 Home
+      </Link>
+
       {/* Assistant App */}
       <button
-        onClick={() => setOpen(open === 'assistant' ? null : 'assistant')}
-        className="w-full flex justify-between items-center py-3 px-3 rounded-xl
-        hover:scale-[1.02] transition-all duration-300"
+        onClick={() => setAssistantOpen(prev => !prev)}
+        className="w-full flex justify-between items-center px-3 py-3 rounded-xl transition hover:scale-[1.02]"
         style={{ background: 'rgba(255,255,255,0.05)' }}
       >
         <span>Assistant App</span>
-        <span>{open === 'assistant' ? '−' : '+'}</span>
+        <span>{assistantOpen ? '−' : '+'}</span>
       </button>
 
-      <AnimatePresence>
-        {open === 'assistant' && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="ml-4 mt-3 space-y-2 text-sm"
+      {assistantOpen && (
+        <div className="ml-4 mt-3 space-y-2 text-sm">
+          <Link
+            href="/dashboard/assistant"
+            className={`block transition
+              ${pathname === '/dashboard/assistant' ? 'font-semibold opacity-100' : 'opacity-70 hover:opacity-100'}`}
           >
-            <Link
-              href="/dashboard/assistant"
-              className="block opacity-80 hover:opacity-100 transition"
-            >
-              • Manage Users
-            </Link>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            • Manage Users
+          </Link>
+        </div>
+      )}
 
       {/* Learning App */}
       <button
-        onClick={() => setOpen(open === 'learning' ? null : 'learning')}
-        className="w-full mt-5 flex justify-between items-center py-3 px-3 rounded-xl
-        hover:scale-[1.02] transition-all duration-300"
+        onClick={() => setLearningOpen(prev => !prev)}
+        className="w-full mt-5 flex justify-between items-center px-3 py-3 rounded-xl transition hover:scale-[1.02]"
         style={{ background: 'rgba(255,255,255,0.05)' }}
       >
         <span>Learning App</span>
-        <span>{open === 'learning' ? '−' : '+'}</span>
+        <span>{learningOpen ? '−' : '+'}</span>
       </button>
 
-      <AnimatePresence>
-        {open === 'learning' && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="ml-4 mt-3 space-y-2 text-sm"
+      {learningOpen && (
+        <div className="ml-4 mt-3 space-y-2 text-sm">
+          <Link
+            href="/dashboard/learning"
+            className={`block transition
+              ${pathname === '/dashboard/learning' ? 'font-semibold opacity-100' : 'opacity-70 hover:opacity-100'}`}
           >
-            <Link
-              href="/dashboard/learning"
-              className="block opacity-80 hover:opacity-100 transition"
-            >
-              • Manage Users
-            </Link>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            • Manage Users
+          </Link>
+        </div>
+      )}
 
       {/* Spacer */}
       <div className="flex-1" />
@@ -90,12 +100,10 @@ export default function Sidebar() {
       {/* Logout */}
       <button
         onClick={() => router.push('/')}
-        className="w-full py-3 rounded-xl font-medium
-        transition-all duration-300 hover:scale-[1.03]"
+        className="w-full py-3 rounded-xl font-medium transition hover:scale-[1.03]"
         style={{
           background: 'linear-gradient(135deg, #ef4444, #dc2626)',
           color: '#fff',
-          boxShadow: '0 10px 30px rgba(239,68,68,0.4)',
         }}
       >
         Logout
