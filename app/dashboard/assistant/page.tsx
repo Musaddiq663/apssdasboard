@@ -3,7 +3,7 @@ import AssistantUsersTable from '@/components/AssistantUsersTable'
 export default function Page() {
   return (
     <>
-      <h2 className="text-3xl font-bold mb-6">Assistant App</h2>
+      <h2 className="text-3xl font-bold mb-6 text-white">Assistant App</h2>
       <AssistantUsersTable />
     </>
   )

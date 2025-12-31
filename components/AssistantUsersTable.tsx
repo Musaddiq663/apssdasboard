@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 interface AssistantUser {
   id: number
@@ -10,7 +10,6 @@ interface AssistantUser {
 }
 
 export default function AssistantUsersTable() {
-  // Dummy initial data
   const initialData: AssistantUser[] = [
     { id: 1, name: 'Alice Johnson', email: 'alice@example.com', image: 'https://i.pravatar.cc/100?img=1' },
     { id: 2, name: 'Bob Smith', email: 'bob@example.com', image: 'https://i.pravatar.cc/100?img=2' },
@@ -23,24 +22,31 @@ export default function AssistantUsersTable() {
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [image, setImage] = useState<string | undefined>('')
+  const [imageUrl, setImageUrl] = useState('')
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [preview, setPreview] = useState<string>('')
 
-  // Filters
+  // filters
   const [searchName, setSearchName] = useState('')
   const [searchEmail, setSearchEmail] = useState('')
 
-  // Filtered users
   const filteredUsers = users.filter(
     u =>
       u.name.toLowerCase().includes(searchName.toLowerCase()) &&
       u.email.toLowerCase().includes(searchEmail.toLowerCase())
   )
 
-  const openAdd = () => {
-    setEditingId(null)
+  const resetForm = () => {
     setName('')
     setEmail('')
-    setImage('')
+    setImageUrl('')
+    setImageFile(null)
+    setPreview('')
+    setEditingId(null)
+  }
+
+  const openAdd = () => {
+    resetForm()
     setShowModal(true)
   }
 
@@ -48,25 +54,45 @@ export default function AssistantUsersTable() {
     setEditingId(u.id)
     setName(u.name)
     setEmail(u.email)
-    setImage(u.image)
+    setImageUrl(u.image || '')
+    setPreview(u.image || '')
+    setImageFile(null)
     setShowModal(true)
+  }
+
+  const handleFileChange = (file: File | null) => {
+    if (!file) return
+    setImageFile(file)
+    setImageUrl('')
+    const objectUrl = URL.createObjectURL(file)
+    setPreview(objectUrl)
+  }
+
+  const handleUrlChange = (val: string) => {
+    setImageUrl(val)
+    setImageFile(null)
+    setPreview(val)
   }
 
   const saveUser = () => {
     if (!name || !email) return
 
+    const finalImage = preview || undefined
+
     if (editingId) {
       setUsers(users.map(u =>
-        u.id === editingId ? { ...u, name, email, image } : u
+        u.id === editingId ? { ...u, name, email, image: finalImage } : u
       ))
     } else {
-      setUsers([...users, { id: Date.now(), name, email, image }])
+      setUsers([...users, { id: Date.now(), name, email, image: finalImage }])
     }
 
     setShowModal(false)
+    resetForm()
   }
 
-  const deleteUser = (id: number) => setUsers(users.filter(u => u.id !== id))
+  const deleteUser = (id: number) =>
+    setUsers(users.filter(u => u.id !== id))
 
   return (
     <div className="p-6 rounded-xl shadow-xl" style={{ background: 'var(--card)', color: 'var(--text)' }}>
@@ -75,7 +101,7 @@ export default function AssistantUsersTable() {
         <h2 className="text-xl font-semibold">Assistant Users</h2>
         <button
           onClick={openAdd}
-          className="px-4 py-2 rounded text-white hover:opacity-90 transition"
+          className="px-4 py-2 rounded text-white"
           style={{ background: 'var(--primary)' }}
         >
           + Add User
@@ -83,20 +109,18 @@ export default function AssistantUsersTable() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-4">
+      <div className="flex gap-4 mb-4">
         <input
-          type="text"
-          placeholder="Search by name"
+          placeholder="Search name"
           value={searchName}
           onChange={e => setSearchName(e.target.value)}
-          className="border p-2 rounded w-full sm:w-1/2 bg-transparent"
+          className="border p-2 rounded w-full bg-transparent"
         />
         <input
-          type="text"
-          placeholder="Search by email"
+          placeholder="Search email"
           value={searchEmail}
           onChange={e => setSearchEmail(e.target.value)}
-          className="border p-2 rounded w-full sm:w-1/2 bg-transparent"
+          className="border p-2 rounded w-full bg-transparent"
         />
       </div>
 
@@ -105,47 +129,32 @@ export default function AssistantUsersTable() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b opacity-70">
-              <th className="py-3 text-left">Name</th>
+              <th className="text-left py-3">Name</th>
               <th className="text-left">Email</th>
               <th className="text-left">Image</th>
               <th className="text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredUsers.length > 0 ? (
-              filteredUsers.map(u => (
-                <tr key={u.id} className="border-b hover:bg-gray-50 transition">
-                  <td className="py-3">{u.name}</td>
-                  <td>{u.email}</td>
-                  <td>
-                    {u.image ? (
-                      <img src={u.image} className="w-10 h-10 rounded-full" />
-                    ) : '—'}
-                  </td>
-                  <td className="text-right space-x-3">
-                    <button
-                      onClick={() => openEdit(u)}
-                      className="hover:underline"
-                      style={{ color: 'var(--primary)' }}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => deleteUser(u.id)}
-                      className="text-red-500 hover:underline"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={4} className="py-6 text-center opacity-60">
-                  No users found
+            {filteredUsers.map(u => (
+              <tr key={u.id} className="border-b hover:bg-gray-50">
+                <td className="py-3">{u.name}</td>
+                <td>{u.email}</td>
+                <td>
+                  {u.image ? (
+                    <img src={u.image} className="w-10 h-10 rounded-full" />
+                  ) : '—'}
+                </td>
+                <td className="text-right space-x-3">
+                  <button onClick={() => openEdit(u)} style={{ color: 'var(--primary)' }}>
+                    Edit
+                  </button>
+                  <button onClick={() => deleteUser(u.id)} className="text-red-500">
+                    Delete
+                  </button>
                 </td>
               </tr>
-            )}
+            ))}
           </tbody>
         </table>
       </div>
@@ -154,7 +163,9 @@ export default function AssistantUsersTable() {
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl w-96">
-            <h3 className="mb-4 font-semibold">{editingId ? 'Edit User' : 'Add User'}</h3>
+            <h3 className="mb-4 font-semibold">
+              {editingId ? 'Edit User' : 'Add User'}
+            </h3>
 
             <input
               placeholder="Name"
@@ -168,18 +179,37 @@ export default function AssistantUsersTable() {
               onChange={e => setEmail(e.target.value)}
               className="border p-2 w-full mb-3"
             />
+
+            {/* Image URL */}
             <input
               placeholder="Image URL"
-              value={image || ''}
-              onChange={e => setImage(e.target.value)}
-              className="border p-2 w-full mb-4"
+              value={imageUrl}
+              disabled={!!imageFile}
+              onChange={e => handleUrlChange(e.target.value)}
+              className="border p-2 w-full mb-3 disabled:opacity-50"
             />
 
+            {/* OR */}
+            <div className="text-center text-xs opacity-60 mb-2">OR</div>
+
+            {/* Upload */}
+            <input
+              type="file"
+              accept="image/*"
+              disabled={!!imageUrl}
+              onChange={e => handleFileChange(e.target.files?.[0] || null)}
+              className="mb-3 w-full disabled:opacity-50"
+            />
+
+            {/* Preview */}
+            {preview && (
+              <div className="mb-4 flex justify-center">
+                <img src={preview} className="w-20 h-20 rounded-full object-cover" />
+              </div>
+            )}
+
             <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowModal(false)}
-                className="px-4 py-2 rounded border hover:bg-gray-100 transition"
-              >
+              <button onClick={() => setShowModal(false)} className="px-4 py-2 border rounded">
                 Cancel
               </button>
               <button

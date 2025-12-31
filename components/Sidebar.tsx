@@ -11,16 +11,14 @@ export default function Sidebar() {
   const [assistantOpen, setAssistantOpen] = useState(false)
   const [learningOpen, setLearningOpen] = useState(false)
 
-  // Exact match for route to auto-open relevant section
   useEffect(() => {
-    if (pathname === '/dashboard/assistant') {
+    if (pathname.startsWith('/dashboard/assistant')) {
       setAssistantOpen(true)
       setLearningOpen(false)
-    } else if (pathname === '/dashboard/learning') {
+    } else if (pathname.startsWith('/dashboard/learning')) {
       setLearningOpen(true)
       setAssistantOpen(false)
     } else {
-      // Home or other pages
       setAssistantOpen(false)
       setLearningOpen(false)
     }
@@ -28,86 +26,93 @@ export default function Sidebar() {
 
   return (
     <aside
-      className="w-64 min-h-screen p-6 flex flex-col"
+      className="
+        w-64 
+        h-screen 
+        flex 
+        flex-col 
+        p-6 
+        text-white 
+        overflow-hidden
+      "
       style={{
-        background: 'var(--card)',
-        color: 'var(--text)',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
+        background: 'linear-gradient(180deg, #020617, #020617)',
+        boxShadow: '0 0 40px rgba(0,0,0,0.4)',
       }}
     >
       {/* Logo */}
-      <h1 className="text-2xl font-bold mb-8" style={{ color: 'var(--primary)' }}>
+      <h1 className="text-2xl font-bold mb-8 tracking-wide">
         Admin Panel
       </h1>
 
       {/* Home */}
       <Link
         href="/dashboard"
-        className={`mb-6 px-3 py-3 rounded-xl block transition
-          ${pathname === '/dashboard' ? 'font-semibold' : 'opacity-80 hover:opacity-100'}`}
-        style={{ background: 'rgba(255,255,255,0.08)' }}
+        className={`px-4 py-3 rounded-xl mb-4 transition
+          ${
+            pathname === '/dashboard'
+              ? 'bg-white/15 font-semibold'
+              : 'hover:bg-white/10'
+          }`}
       >
         🏠 Home
       </Link>
 
-      {/* Assistant App */}
+      {/* Assistant */}
       <button
-        onClick={() => setAssistantOpen(prev => !prev)}
-        className="w-full flex justify-between items-center px-3 py-3 rounded-xl transition hover:scale-[1.02]"
-        style={{ background: 'rgba(255,255,255,0.05)' }}
+        onClick={() => setAssistantOpen(v => !v)}
+        className="w-full flex justify-between items-center px-4 py-3 rounded-xl hover:bg-white/10"
       >
         <span>Assistant App</span>
         <span>{assistantOpen ? '−' : '+'}</span>
       </button>
 
       {assistantOpen && (
-        <div className="ml-4 mt-3 space-y-2 text-sm">
-          <Link
-            href="/dashboard/assistant"
-            className={`block transition
-              ${pathname === '/dashboard/assistant' ? 'font-semibold opacity-100' : 'opacity-70 hover:opacity-100'}`}
-          >
-            • Manage Users
-          </Link>
-        </div>
+        <Link
+          href="/dashboard/assistant"
+          className={`ml-4 mt-2 text-sm transition
+            ${
+              pathname === '/dashboard/assistant'
+                ? 'opacity-100 font-semibold'
+                : 'opacity-70 hover:opacity-100'
+            }`}
+        >
+          • Manage Users
+        </Link>
       )}
 
-      {/* Learning App */}
+      {/* Learning */}
       <button
-        onClick={() => setLearningOpen(prev => !prev)}
-        className="w-full mt-5 flex justify-between items-center px-3 py-3 rounded-xl transition hover:scale-[1.02]"
-        style={{ background: 'rgba(255,255,255,0.05)' }}
+        onClick={() => setLearningOpen(v => !v)}
+        className="w-full mt-4 flex justify-between items-center px-4 py-3 rounded-xl hover:bg-white/10"
       >
         <span>Learning App</span>
         <span>{learningOpen ? '−' : '+'}</span>
       </button>
 
       {learningOpen && (
-        <div className="ml-4 mt-3 space-y-2 text-sm">
-          <Link
-            href="/dashboard/learning"
-            className={`block transition
-              ${pathname === '/dashboard/learning' ? 'font-semibold opacity-100' : 'opacity-70 hover:opacity-100'}`}
-          >
-            • Manage Users
-          </Link>
-        </div>
+        <Link
+          href="/dashboard/learning"
+          className={`ml-4 mt-2 text-sm transition
+            ${
+              pathname === '/dashboard/learning'
+                ? 'opacity-100 font-semibold'
+                : 'opacity-70 hover:opacity-100'
+            }`}
+        >
+          • Manage Users
+        </Link>
       )}
 
-      {/* Spacer */}
-      <div className="flex-1" />
-
-      {/* Logout */}
-      <button
-        onClick={() => router.push('/')}
-        className="w-full py-3 rounded-xl font-medium transition hover:scale-[1.03]"
-        style={{
-          background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-          color: '#fff',
-        }}
-      >
-        Logout
-      </button>
+      {/* Push logout to bottom */}
+      <div className="mt-auto pt-6">
+        <button
+          onClick={() => router.push('/')}
+          className="w-full py-3 rounded-xl font-semibold bg-red-500 hover:bg-red-600 transition"
+        >
+          Logout
+        </button>
+      </div>
     </aside>
   )
 }
